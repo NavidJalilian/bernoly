@@ -1,18 +1,8 @@
+import type { TeamEdge, TeamMember } from '@/pages/teamFlow/TeamFlowTypes';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type TeamMember = {
-  id: string;
-  name: string;
-  role: string;
-  position: { x: number; y: number };
-};
 
-export type TeamEdge = {
-  id: string;
-  source: string;
-  target: string;
-};
 
 type TeamState = {
   members: TeamMember[];
@@ -46,7 +36,7 @@ export const useTeamStore = create<TeamState>()(
         })),
       addEdge: (source, target) =>
         set((state) => {
-          const id = `e${source}-${target}-${Date.now()}-${Math.random()}`;
+          const id = crypto.randomUUID();
           return { edges: [...state.edges, { id, source, target }] };
         }),
       updateMemberPosition: (id, position) =>

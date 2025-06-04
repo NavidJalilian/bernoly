@@ -1,7 +1,8 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { Pencil } from 'lucide-react';
 import { Code, Briefcase, Users } from 'lucide-react';
+import type { TeamMemberNodeData } from './TeamFlowTypes';
 
 const handleStyle = {
     width: 12,
@@ -12,7 +13,7 @@ const handleStyle = {
     boxShadow: '0 1px 4px rgba(0,0,0,0.10)',
 };
 
-const TeamMemberNode = memo(({ data, id }: any) => (
+const TeamMemberNode = memo(({ data }: { data: TeamMemberNodeData }) => (
     <div
         tabIndex={0}
         role="button"
@@ -24,7 +25,6 @@ const TeamMemberNode = memo(({ data, id }: any) => (
         className="group relative w-48 min-w-40 max-w-xs p-4 rounded-xl border bg-card shadow-md cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring transition hover:shadow-lg hover:border-primary"
         style={{ background: 'white', border: '1px solid #e5e7eb' }}
     >
-        {/* Target handle (incoming connections) */}
         <Handle type="target" position={Position.Top} id="target" style={handleStyle} />
         <span className="absolute top-3 right-3 text-muted-foreground opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-10">
             <Pencil className="w-4 h-4" />
@@ -38,7 +38,6 @@ const TeamMemberNode = memo(({ data, id }: any) => (
                 <span className="text-xs text-muted-foreground truncate" title={data.role}>{data.role}</span>
             </div>
         </div>
-        {/* Source handle (outgoing connections) */}
         <Handle type="source" position={Position.Bottom} id="source" style={handleStyle} />
     </div>
 ));

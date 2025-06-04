@@ -1,13 +1,9 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import ReactFlow, { Background, Controls, MiniMap, useReactFlow } from 'reactflow';
-import type { Node, Edge, Connection } from 'reactflow';
+import type { Node, Edge, Connection, NodeChange } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { useTeamStore } from '../../stores/team.store';
-import { PlusIcon, Trash } from 'lucide-react';
 import { Code, Briefcase, Users } from 'lucide-react';
 import nodeTypes from './TeamFlowTypes';
 import { applyNodeChanges } from 'reactflow';
@@ -40,10 +36,8 @@ function TeamFlow() {
         }));
     }, [members]);
 
-    // Local state for React Flow nodes
     const [reactFlowNodes, setReactFlowNodes] = useState<Node[]>(initialNodes);
 
-    // Sync local state with Zustand members when members change (add/delete)
     useEffect(() => {
         setReactFlowNodes(initialNodes);
     }, [initialNodes]); // Depend on initialNodes memo result
@@ -83,7 +77,7 @@ function TeamFlow() {
     };
 
     // Handle node changes internally for smooth dragging
-    const handleNodesChange = (changes: any[]) => {
+    const handleNodesChange = (changes: NodeChange[]) => {
         setReactFlowNodes((nds) => applyNodeChanges(changes, nds));
     };
 
@@ -182,14 +176,16 @@ function TeamFlow() {
                 </div>
             </main>
             <EditModal
-                editId={editId}
-                editName={editName}
-                editRole={editRole}
-                setEditId={setEditId}
-                setEditName={setEditName}
-                setEditRole={setEditRole}
-                handleSave={handleSave}
-                handleDelete={handleDelete}
+                {...{
+                    editId,
+                    editName,
+                    editRole,
+                    setEditId,
+                    setEditName,
+                    setEditRole,
+                    handleSave,
+                    handleDelete,
+                }}
             />
         </div>
     );
