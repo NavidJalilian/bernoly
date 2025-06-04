@@ -116,9 +116,9 @@ function TeamFlow() {
             return;
         }
 
-        const position = reactFlowInstance.project({
-            x: event.clientX - reactFlowBounds.left,
-            y: event.clientY - reactFlowBounds.top,
+        const position = reactFlowInstance.screenToFlowPosition({
+            x: event.clientX,
+            y: event.clientY,
         });
 
         addMember({ name: `New ${type}`, role: type, position });
