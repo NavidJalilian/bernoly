@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -32,6 +32,9 @@ const EditModal: React.FC<EditModalProps> = ({
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Edit Team Member</DialogTitle>
+                    <DialogDescription>
+                        Edit the details of the team member.
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={(e) => {
                     e.preventDefault();
@@ -50,13 +53,14 @@ const EditModal: React.FC<EditModalProps> = ({
                             <SelectItem value="Team Member">Team Member</SelectItem>
                         </SelectContent>
                     </Select>
+
+                    <DialogFooter>
+                        <Button type="submit" form="editTeamMemberForm" onClick={handleSave}>Save</Button>
+                        <Button variant="destructive" onClick={handleDelete} className="ml-2" type="button">
+                            <Trash className="w-4 h-4 mr-1" /> Delete
+                        </Button>
+                    </DialogFooter>
                 </form>
-                <DialogFooter>
-                    <Button type="submit" form="editTeamMemberForm">Save</Button>
-                    <Button variant="destructive" onClick={handleDelete} className="ml-2" type="button">
-                        <Trash className="w-4 h-4 mr-1" /> Delete
-                    </Button>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     );

@@ -55,6 +55,21 @@ function TeamFlow() {
     const handleSave = () => {
         if (editId) {
             updateMember(editId, { name: editName, role: editRole });
+            // After updating the store, sync the local React Flow nodes state
+            setReactFlowNodes(members.map((m) => ({
+                id: m.id,
+                type: 'teamMember',
+                position: m.position,
+                data: {
+                    name: m.name,
+                    role: m.role,
+                    onEdit: () => {
+                        setEditId(m.id);
+                        setEditName(m.name);
+                        setEditRole(m.role);
+                    },
+                },
+            })));
             setEditId(null);
         }
     };
@@ -121,21 +136,21 @@ function TeamFlow() {
                         <Button
                             draggable
                             onDragStart={(event) => handleDragStart(event, 'Developer')}
-                            className="flex items-center gap-1"
+                            className="flex items-center gap-1 cursor-move"
                         >
                             <Code className="w-4 h-4" /> Add Developer
                         </Button>
                         <Button
                             draggable
                             onDragStart={(event) => handleDragStart(event, 'Manager')}
-                            className="flex items-center gap-1"
+                            className="flex items-center gap-1 cursor-move"
                         >
                             <Briefcase className="w-4 h-4" /> Add Manager
                         </Button>
                         <Button
                             draggable
                             onDragStart={(event) => handleDragStart(event, 'Team Member')}
-                            className="flex items-center gap-1"
+                            className="flex items-center gap-1 cursor-move"
                         >
                             <Users className="w-4 h-4" /> Add Team Member
                         </Button>
