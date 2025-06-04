@@ -27,7 +27,7 @@ export const useTeamStore = create<TeamState>()(
       ],
       addMember: (member) =>
         set((state) => {
-          const id = (Date.now() + Math.random()).toString();
+          const id = crypto.randomUUID();
           return { members: [...state.members, { ...member, id }] };
         }),
       updateMember: (id, data) =>
