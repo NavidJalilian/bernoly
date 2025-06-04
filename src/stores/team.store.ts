@@ -21,6 +21,7 @@ type TeamState = {
   updateMember: (id: string, data: Partial<Omit<TeamMember, 'id'>>) => void;
   addEdge: (source: string, target: string) => void;
   updateMemberPosition: (id: string, position: { x: number; y: number }) => void;
+  deleteMember: (id: string) => void;
 };
 
 export const useTeamStore = create<TeamState>()(
@@ -50,6 +51,11 @@ export const useTeamStore = create<TeamState>()(
       updateMemberPosition: (id, position) =>
         set((state) => ({
           members: state.members.map((m) => (m.id === id ? { ...m, position } : m)),
+        })),
+      deleteMember: (id) =>
+        set((state) => ({
+          members: state.members.filter((m) => m.id !== id),
+          edges: state.edges.filter((e) => e.source !== id && e.target !== id),
         })),
     }),
     {
