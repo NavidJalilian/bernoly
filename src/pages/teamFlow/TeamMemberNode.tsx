@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { Pencil } from 'lucide-react';
+import { Code, Briefcase, Users } from 'lucide-react';
 
 const handleStyle = {
     width: 12,
@@ -28,9 +29,14 @@ const TeamMemberNode = memo(({ data, id }: any) => (
         <span className="absolute top-3 right-3 text-muted-foreground opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-10">
             <Pencil className="w-4 h-4" />
         </span>
-        <div className="flex flex-col gap-1">
-            <span className="text-base font-semibold text-foreground truncate" title={data.name}>{data.name}</span>
-            <span className="text-xs text-muted-foreground truncate" title={data.role}>{data.role}</span>
+        <div className="flex items-center gap-2">
+            {data.role === 'Developer' && <Code className="w-4 h-4 text-muted-foreground" />}
+            {data.role === 'Manager' && <Briefcase className="w-4 h-4 text-muted-foreground" />}
+            {data.role === 'Team Member' && <Users className="w-4 h-4 text-muted-foreground" />}
+            <div className="flex flex-col gap-1">
+                <span className="text-base font-semibold text-foreground truncate" title={data.name}>{data.name}</span>
+                <span className="text-xs text-muted-foreground truncate" title={data.role}>{data.role}</span>
+            </div>
         </div>
         {/* Source handle (outgoing connections) */}
         <Handle type="source" position={Position.Right} id="source" style={handleStyle} />

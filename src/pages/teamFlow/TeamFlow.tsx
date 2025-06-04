@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
-import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import ReactFlow, { Background, Controls, MiniMap, useReactFlow } from 'reactflow';
 import type { Node, Edge, Connection } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
-import { Input } from '../../components/ui/input';
-import { Button } from '../../components/ui/button';
-import { Label } from '../../components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { useTeamStore } from '../../stores/team.store';
 import { PlusIcon, Trash } from 'lucide-react';
+import { Code, Briefcase, Users } from 'lucide-react';
 import nodeTypes from './nodeTypes';
+import { applyNodeChanges } from 'reactflow';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 function TeamFlow() {
     const { members, edges, addMember, updateMember, addEdge, updateMemberPosition, deleteMember } = useTeamStore();
@@ -16,23 +19,38 @@ function TeamFlow() {
     const [editName, setEditName] = useState('');
     const [editRole, setEditRole] = useState('');
 
-    // React Flow state
-    const nodes: Node[] = members.map((m) => ({
-        id: m.id,
-        type: 'teamMember',
-        position: m.position,
-        data: {
-            name: m.name,
-            role: m.role,
-            onEdit: () => {
-                setEditId(m.id);
-                setEditName(m.name);
-                setEditRole(m.role);
-            },
-        },
-    }));
-    const flowEdges: Edge[] = edges.map((e) => ({ id: e.id, source: e.source, target: e.target }));
+    const reactFlowWrapperRef = useRef<HTMLDivElement>(null);
+    const reactFlowInstance = useReactFlow();
 
+    // React Flow state
+    const initialNodes: Node[] = useMemo(() => {
+        return members.map((m) => ({
+            id: m.id,
+            type: 'teamMember',
+            position: m.position,
+            data: {
+                name: m.name,
+                role: m.role,
+                onEdit: () => {
+                    setEditId(m.id);
+                    setEditName(m.name);
+                    setEditRole(m.role);
+                },
+            },
+        }));
+    }, [members]);
+
+    // Local state for React Flow nodes
+    const [reactFlowNodes, setReactFlowNodes] = useState<Node[]>(initialNodes);
+
+    // Sync local state with Zustand members when members change (add/delete)
+    useEffect(() => {
+        setReactFlowNodes(initialNodes);
+    }, [initialNodes]); // Depend on initialNodes memo result
+
+    const flowEdges: Edge[] = useMemo(() => {
+        return edges.map((e) => ({ id: e.id, source: e.source, target: e.target }));
+    }, [edges]);
 
     const handleSave = () => {
         if (editId) {
@@ -49,13 +67,9 @@ function TeamFlow() {
         }
     };
 
-    // Handle node drag (position change)
+    // Handle node changes internally for smooth dragging
     const handleNodesChange = (changes: any[]) => {
-        changes.forEach(change => {
-            if (change.type === 'position' && change.position && change.id) {
-                updateMemberPosition(change.id, change.position);
-            }
-        });
+        setReactFlowNodes((nds) => applyNodeChanges(changes, nds));
     };
 
     const handleConnect = (connection: Connection) => {
@@ -64,26 +78,84 @@ function TeamFlow() {
         }
     };
 
+    const handleNodeDragStop = (_: React.MouseEvent, node: Node) => {
+        updateMemberPosition(node.id, node.position);
+    };
+
+    const handleDragStart = (event: React.DragEvent<HTMLButtonElement>, nodeType: string) => {
+        event.dataTransfer.setData('application/reactflow', nodeType);
+        event.dataTransfer.effectAllowed = 'move';
+    };
+
+    const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        const reactFlowBounds = reactFlowWrapperRef.current?.getBoundingClientRect();
+        const type = event.dataTransfer.getData('application/reactflow');
+
+        if (!type || !reactFlowBounds) {
+            return;
+        }
+
+        const position = reactFlowInstance.project({
+            x: event.clientX - reactFlowBounds.left,
+            y: event.clientY - reactFlowBounds.top,
+        });
+
+        addMember({ name: `New ${type}`, role: type, position });
+    };
+
     return (
         <div className="min-h-screen h-screen w-screen bg-gray-50 flex flex-col">
             <header className="p-6 pb-2 flex-shrink-0">
                 <h1 className="text-3xl font-bold">Team Flow</h1>
             </header>
             <div className="w-full flex justify-center">
-                <div className="mt-2 mb-4 px-6 py-3 bg-white rounded-xl shadow flex items-center gap-4">
-                    <Button onClick={() => addMember({ name: 'New Member', role: 'Role', position: { x: 250, y: 250 } })}>
-                        Add Team Member <PlusIcon className="w-4 h-4" />
-                    </Button>
+                <div className="flex flex-col items-center">
+                    <p className="text-sm text-muted-foreground mb-2">Drag these buttons to add new team members:</p>
+                    <div className="mt-2 mb-4 px-6 py-3 bg-white rounded-xl shadow flex items-center gap-4">
+                        <Button
+                            draggable
+                            onDragStart={(event) => handleDragStart(event, 'Developer')}
+                            className="flex items-center gap-1"
+                        >
+                            <Code className="w-4 h-4" /> Add Developer
+                        </Button>
+                        <Button
+                            draggable
+                            onDragStart={(event) => handleDragStart(event, 'Manager')}
+                            className="flex items-center gap-1"
+                        >
+                            <Briefcase className="w-4 h-4" /> Add Manager
+                        </Button>
+                        <Button
+                            draggable
+                            onDragStart={(event) => handleDragStart(event, 'Team Member')}
+                            className="flex items-center gap-1"
+                        >
+                            <Users className="w-4 h-4" /> Add Team Member
+                        </Button>
+                    </div>
                 </div>
             </div>
             <main className="flex-1 flex flex-col">
-                <div className="flex-1 relative">
+                <div
+                    className="flex-1 relative"
+                    ref={reactFlowWrapperRef}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                >
                     <ReactFlow
-                        nodes={nodes}
+                        nodes={reactFlowNodes}
                         edges={flowEdges}
                         fitView
                         onNodesChange={handleNodesChange}
                         onConnect={handleConnect}
+                        onNodeDragStop={handleNodeDragStop}
                         className="absolute inset-0"
                         nodeTypes={nodeTypes}
                     >
@@ -102,7 +174,16 @@ function TeamFlow() {
                         <Label htmlFor="name">Name</Label>
                         <Input id="name" value={editName} onChange={e => setEditName(e.target.value)} />
                         <Label htmlFor="role">Role</Label>
-                        <Input id="role" value={editRole} onChange={e => setEditRole(e.target.value)} />
+                        <Select value={editRole} onValueChange={setEditRole}>
+                            <SelectTrigger id="role">
+                                <SelectValue placeholder="Select a role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Developer">Developer</SelectItem>
+                                <SelectItem value="Manager">Manager</SelectItem>
+                                <SelectItem value="Team Member">Team Member</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                     <DialogFooter>
                         <Button onClick={handleSave}>Save</Button>
