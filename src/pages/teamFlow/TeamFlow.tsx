@@ -9,12 +9,12 @@ import { Label } from '@/components/ui/label';
 import { useTeamStore } from '../../stores/team.store';
 import { PlusIcon, Trash } from 'lucide-react';
 import { Code, Briefcase, Users } from 'lucide-react';
-import nodeTypes from './nodeTypes';
+import nodeTypes from './TeamFlowTypes';
 import { applyNodeChanges } from 'reactflow';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import EditModal from '@/components/editModal';
 
 function TeamFlow() {
-    const { members, edges, addMember, updateMember, addEdge, updateMemberPosition, deleteMember } = useTeamStore();
+    const { members, edges, addMember, updateMember, addEdge, updateMemberPosition, deleteMember, deleteEdge } = useTeamStore();
     const [editId, setEditId] = useState<string | null>(null);
     const [editName, setEditName] = useState('');
     const [editRole, setEditRole] = useState('');
@@ -156,6 +156,7 @@ function TeamFlow() {
                         onNodesChange={handleNodesChange}
                         onConnect={handleConnect}
                         onNodeDragStop={handleNodeDragStop}
+                        onEdgeClick={(_event, edge) => deleteEdge(edge.id)}
                         className="absolute inset-0"
                         nodeTypes={nodeTypes}
                     >
@@ -165,34 +166,16 @@ function TeamFlow() {
                     </ReactFlow>
                 </div>
             </main>
-            <Dialog open={!!editId} onOpenChange={(open) => !open && setEditId(null)}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Edit Team Member</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                        <Label htmlFor="name">Name</Label>
-                        <Input id="name" value={editName} onChange={e => setEditName(e.target.value)} />
-                        <Label htmlFor="role">Role</Label>
-                        <Select value={editRole} onValueChange={setEditRole}>
-                            <SelectTrigger id="role">
-                                <SelectValue placeholder="Select a role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Developer">Developer</SelectItem>
-                                <SelectItem value="Manager">Manager</SelectItem>
-                                <SelectItem value="Team Member">Team Member</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <DialogFooter>
-                        <Button onClick={handleSave}>Save</Button>
-                        <Button variant="destructive" onClick={handleDelete} className="ml-2" type="button">
-                            <Trash className="w-4 h-4 mr-1" /> Delete
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <EditModal
+                editId={editId}
+                editName={editName}
+                editRole={editRole}
+                setEditId={setEditId}
+                setEditName={setEditName}
+                setEditRole={setEditRole}
+                handleSave={handleSave}
+                handleDelete={handleDelete}
+            />
         </div>
     );
 }

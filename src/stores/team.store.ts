@@ -22,6 +22,7 @@ type TeamState = {
   addEdge: (source: string, target: string) => void;
   updateMemberPosition: (id: string, position: { x: number; y: number }) => void;
   deleteMember: (id: string) => void;
+  deleteEdge: (edgeId: string) => void;
 };
 
 export const useTeamStore = create<TeamState>()(
@@ -56,6 +57,10 @@ export const useTeamStore = create<TeamState>()(
         set((state) => ({
           members: state.members.filter((m) => m.id !== id),
           edges: state.edges.filter((e) => e.source !== id && e.target !== id),
+        })),
+      deleteEdge: (edgeId) =>
+        set((state) => ({
+          edges: state.edges.filter((e) => e.id !== edgeId),
         })),
     }),
     {

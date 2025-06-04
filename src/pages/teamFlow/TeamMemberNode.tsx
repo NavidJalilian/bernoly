@@ -25,7 +25,7 @@ const TeamMemberNode = memo(({ data, id }: any) => (
         style={{ background: 'white', border: '1px solid #e5e7eb' }}
     >
         {/* Target handle (incoming connections) */}
-        <Handle type="target" position={Position.Left} id="target" style={handleStyle} />
+        <Handle type="target" position={Position.Top} id="target" style={handleStyle} />
         <span className="absolute top-3 right-3 text-muted-foreground opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-10">
             <Pencil className="w-4 h-4" />
         </span>
@@ -39,7 +39,7 @@ const TeamMemberNode = memo(({ data, id }: any) => (
             </div>
         </div>
         {/* Source handle (outgoing connections) */}
-        <Handle type="source" position={Position.Right} id="source" style={handleStyle} />
+        <Handle type="source" position={Position.Bottom} id="source" style={handleStyle} />
     </div>
 ));
 
